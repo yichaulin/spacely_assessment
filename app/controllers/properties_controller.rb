@@ -1,17 +1,31 @@
 class PropertiesController < ApplicationController
-  # TODO: Remove this once the page of file uploading form is implemented
-  skip_before_action :verify_authenticity_token
+  def index
+  end
 
   def batch
     unless params[:file].present?
-      return render json: { error: "No file provided" }, status: :bad_request
+      respond_to do |format|
+        format.json { render json: { error: "No file provided" }, status: :bad_request }
+        format.html do
+          flash[:alert] = "No file provided"
+          redirect_to properties_path
+        end
+      end
+      return
     end
 
     begin
       csv_file = params[:file]
       
       unless csv_file.content_type == 'text/csv' || csv_file.original_filename.end_with?('.csv')
-        return render json: { error: "File must be a CSV file" }, status: :bad_request
+        respond_to do |format|
+          format.json { render json: { error: "File must be a CSV file" }, status: :bad_request }
+          format.html do
+            flash[:alert] = "File must be a CSV file"
+            redirect_to properties_path
+          end
+        end
+        return
       end
 
       # Process CSV file line by line
@@ -38,11 +52,34 @@ class PropertiesController < ApplicationController
       
       response_data[:errors] = errors if errors.any?
       
-      render json: response_data, status: :ok
+      respond_to do |format|
+        format.json { render json: response_data, status: :ok }
+        format.html do
+          if errors.any?
+            flash[:alert] = "Processed #{processed_count} records with #{errors.count} errors."
+            flash[:errors] = errors
+          else
+            flash[:notice] = "Successfully processed #{processed_count} records."
+          end
+          redirect_to properties_path
+        end
+      end
     rescue CSV::MalformedCSVError => e
-      render json: { error: "Invalid CSV format: #{e.message}" }, status: :bad_request
+      respond_to do |format|
+        format.json { render json: { error: "Invalid CSV format: #{e.message}" }, status: :bad_request }
+        format.html do
+          flash[:alert] = "Invalid CSV format: #{e.message}"
+          redirect_to properties_path
+        end
+      end
     rescue => e
-      render json: { error: "Error processing file: #{e.message}" }, status: :internal_server_error
+      respond_to do |format|
+        format.json { render json: { error: "Error processing file: #{e.message}" }, status: :internal_server_error }
+        format.html do
+          flash[:alert] = "Error processing file: #{e.message}"
+          redirect_to properties_path
+        end
+      end
     end
   end
 end

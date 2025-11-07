@@ -12,6 +12,10 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
 
-  # Properties batch endpoint
-  post "properties/batch", to: "properties#batch"
+  # Properties routes
+  resources :properties, only: [:index] do
+    collection do
+      post "batch", to: "properties#batch"
+    end
+  end
 end
