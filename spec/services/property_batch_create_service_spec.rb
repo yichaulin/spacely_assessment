@@ -16,10 +16,6 @@ RSpec.describe PropertyBatchCreateService, type: :service do
       )
     end
 
-    before do
-      service.call
-    end
-
     after do
       tempfile.close
       tempfile.unlink
@@ -35,6 +31,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
           CSV
         end
         it "creates all records" do
+          service.call
           expect(service).to be_completed
           expect(service.result[:records_processed]).to eq(2)
           expect(service.result[:invalid_data]).to be_empty
@@ -54,6 +51,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
           CSV
         end
         it "creates valid records and handles invalid records error" do
+          service.call
           expect(service).to be_completed
           expect(service.result[:records_processed]).to eq(1)
           expect(service.result[:invalid_data].size).to eq(1)
@@ -84,6 +82,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
         end
 
         it "does not process file and service status is bad_request" do
+          service.call
           expect(service.status).to eq(:bad_request)
           expect(service.result[:error].is_a?(PropertyBatchCreateService::InvalidCSVFormatError))
         end
@@ -97,6 +96,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
           CSV
         end
         it do
+          service.call
           expect(service.status).to eq(:bad_request)
           expect(service.result[:error].is_a?(PropertyBatchCreateService::InvalidCSVFormatError))
         end
