@@ -3,84 +3,48 @@ class PropertiesController < ApplicationController
   end
 
   def batch
-    unless params[:file].present?
-      respond_to do |format|
-        format.json { render json: { error: "No file provided" }, status: :bad_request }
-        format.html do
-          flash[:alert] = "No file provided"
-          redirect_to properties_path
-        end
-      end
-      return
+    service = PropertyBatchCreateService.new(params[:file])
+    service.call
+
+    if service.completed?
+      handle_completed_response(service)
+    else
+      handle_uncompleted_response(service)
+    end
+  end
+
+  private
+
+  def handle_uncompleted_response(service)
+    error = service.result[:error]
+    status = service.status
+
+    error_message = case status
+    when :bad_request
+      "Invalid CSV Format: #{error.message }"
+    when :internal_server_error
+      "Interval Server Error: #{error.message}"
     end
 
-    begin
-      csv_file = params[:file]
-      
-      unless csv_file.content_type == 'text/csv' || csv_file.original_filename.end_with?('.csv')
-        respond_to do |format|
-          format.json { render json: { error: "File must be a CSV file" }, status: :bad_request }
-          format.html do
-            flash[:alert] = "File must be a CSV file"
-            redirect_to properties_path
-          end
-        end
-        return
+    respond_to do |format|
+      format.html do
+        flash[:alert] = error_message
+        redirect_to properties_path
       end
+    end
+  end
 
-      # Process CSV file line by line
-      processed_count = 0
-      errors = []
-      
-      file_path = csv_file.tempfile.path
-      CSV.foreach(file_path, headers: true) do |row|
-        begin
-          # Process each row
-          # TODO: Implement your batch processing logic here
-          # Example: Property.create(row.to_h)
-          
-          processed_count += 1
-        rescue => e
-          errors << { row: processed_count + 1, error: e.message }
-        end
-      end
-      
-      response_data = {
-        message: "Batch processing completed",
-        records_processed: processed_count
-      }
-      
-      response_data[:errors] = errors if errors.any?
-      
-      respond_to do |format|
-        format.json { render json: response_data, status: :ok }
-        format.html do
-          if errors.any?
-            flash[:alert] = "Processed #{processed_count} records with #{errors.count} errors."
-            flash[:errors] = errors
-          else
-            flash[:notice] = "Successfully processed #{processed_count} records."
-          end
-          redirect_to properties_path
-        end
-      end
-    rescue CSV::MalformedCSVError => e
-      respond_to do |format|
-        format.json { render json: { error: "Invalid CSV format: #{e.message}" }, status: :bad_request }
-        format.html do
-          flash[:alert] = "Invalid CSV format: #{e.message}"
-          redirect_to properties_path
-        end
-      end
-    rescue => e
-      respond_to do |format|
-        format.json { render json: { error: "Error processing file: #{e.message}" }, status: :internal_server_error }
-        format.html do
-          flash[:alert] = "Error processing file: #{e.message}"
-          redirect_to properties_path
-        end
+  def handle_completed_response(service)
+    records_processed = service.result[:records_processed]
+    invalid_data = service.result[:invalid_data]
+    message = "Batch processing completed (records created or updated).\nProcessed records: #{records_processed}"
+
+    respond_to do |format|
+      format.html do
+        flash[:notice] = message
+        flash[:invalid_data] = invalid_data unless invalid_data.empty?
+        redirect_to properties_path
       end
     end
   end
 end
-

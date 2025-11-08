@@ -16,12 +16,12 @@
     </div>
   <% end %>
 
-  <% if flash[:errors] && flash[:errors].any? %>
+  <% if flash[:invalid_data] && flash[:invalid_data].any? %>
     <div class="alert alert-warning">
-      <strong>Errors encountered:</strong>
+      <strong>Invalid data:</strong>
       <ul>
-        <% flash[:errors].each do |error| %>
-          <li>Row <%= error[:row] %>: <%= error[:error] %></li>
+        <% flash[:invalid_data].each do |data| %>
+          <li>Row <%= data["row"] %>: <%= data["error"] %></li>
         <% end %>
       </ul>
     </div>
