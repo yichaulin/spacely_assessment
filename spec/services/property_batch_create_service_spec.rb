@@ -55,7 +55,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
           expect(service).to be_completed
           expect(service.result[:records_processed]).to eq(1)
           expect(service.result[:invalid_data].size).to eq(1)
-          expect(service.result[:invalid_data].first[:error]).to include("Name can't be blank")
+          expect(service.result[:invalid_data].first[:error]).to include("物件名 を入力してください")
 
           expect(Property.count).to eq(1)
           expect(Property.exists?(custom_unique_id: 1)).to be_truthy
@@ -189,7 +189,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
             ,テスト物件1,東京都テスト区1-1-1,101,100000,30,マンション
           CSV
         end
-        let(:invalid_message) { "Custom unique can't be blank" }
+        let(:invalid_message) { "ユニークID を入力してください" }
 
         it_behaves_like "handle validation with expected invalid message"
       end
@@ -200,7 +200,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
             1,,東京都テスト区1-1-1,101,100000,30,マンション
           CSV
         end
-        let(:invalid_message) { "Name can't be blank" }
+        let(:invalid_message) { "物件名 を入力してください" }
 
         it_behaves_like "handle validation with expected invalid message"
       end
@@ -212,7 +212,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
             1,テスト物件1,,101,100000,30,マンション
           CSV
         end
-        let(:invalid_message) { "Address can't be blank" }
+        let(:invalid_message) { "住所 を入力してください" }
 
         it_behaves_like "handle validation with expected invalid message"
       end
@@ -224,7 +224,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
             1,テスト物件1,東京都テスト区1-1-1,,100000,30,マンション
           CSV
         end
-        let(:invalid_message) { "Room number is required for マンション" }
+        let(:invalid_message) { "部屋番号 は建物の種類が一戸建て以外の場合は必須です" }
 
         it_behaves_like "handle validation with expected invalid message"
       end
@@ -236,7 +236,7 @@ RSpec.describe PropertyBatchCreateService, type: :service do
             1,テスト物件1,東京都テスト区1-1-1,,100000,30,アパート
           CSV
         end
-        let(:invalid_message) { "Room number is required for アパート" }
+        let(:invalid_message) { "部屋番号 は建物の種類が一戸建て以外の場合は必須です" }
 
         it_behaves_like "handle validation with expected invalid message"
       end

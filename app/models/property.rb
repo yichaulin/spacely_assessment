@@ -5,7 +5,7 @@ class Property < ApplicationRecord
   validates :custom_unique_id, presence: true
   validates :name, presence: true
   validates :address, presence: true
-  validates :category, presence: true, inclusion: { in: ALLOWED_CATEGORIES, message: "must be one of: #{ALLOWED_CATEGORIES.join(', ')}" }
+  validates :category, presence: true, inclusion: { in: ALLOWED_CATEGORIES }
   validate :room_number_required_unless_detached_house
 
   private
@@ -13,7 +13,7 @@ class Property < ApplicationRecord
   def room_number_required_unless_detached_house
     # room_number is only allowed to be null when category is '一戸建て'
     if category != DETACHED_HOUSE && room_number.nil?
-      errors.add(:room_number, "is required for #{category}")
+      errors.add(:room_number, I18n.t('activerecord.errors.models.property.attributes.room_number.required_for_category'))
     end
   end
 end
