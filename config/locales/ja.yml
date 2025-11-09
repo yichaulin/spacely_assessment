@@ -1,0 +1,44 @@
+ja:
+  activerecord:
+    models:
+      property: 物件
+    attributes:
+      property:
+        id: ID
+        custom_unique_id: ユニークID
+        name: 物件名
+        address: 住所
+        room_number: 部屋番号
+        rent_fee: 賃料
+        size: 広さ
+        category: 建物の種類
+        created_at: 作成日時
+        updated_at: 更新日時
+    errors:
+      models:
+        property:
+          attributes:
+            custom_unique_id:
+              blank: を入力してください
+              taken: は既に使用されています
+            name:
+              blank: を入力してください
+            address:
+              blank: を入力してください
+            category:
+              blank: を入力してください
+              inclusion: は有効な値ではありません（マンション、アパート、一戸建てのいずれかを選択してください）
+            room_number:
+              required_for_category: は建物の種類が一戸建て以外の場合は必須です
+
+  # Custom validation messages
+  errors:
+    messages:
+      blank: を入力してください
+      taken: は既に使用されています
+      inclusion: は一覧に含まれていません
+      not_a_number: は数値で入力してください
+      greater_than: は%{count}より大きい値にしてください
+      greater_than_or_equal_to: は%{count}以上の値にしてください
+      less_than: は%{count}より小さい値にしてください
+      less_than_or_equal_to: は%{count}以下の値にしてください
